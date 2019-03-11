@@ -11,20 +11,26 @@ module.exports = {
       throw e
     }
   },
-  createEvent: async ({ eventInput: { title, description, price, date } }) => {
+  createEvent: async (
+    { eventInput: { title, description, price, date } },
+    req
+  ) => {
+    if (!req.isAuth) {
+      throw new Error('Unauthenticated')
+    }
     try {
       const event = new Event({
         title,
         description,
         price: +price,
         date: new Date(date),
-        creator: '5c724314da46612266be3d80'
+        creator: req.userId
       })
       let createdEvent
       const result = await event.save()
       createdEvent = transformEvent(result)
 
-      const creator = await User.findById('5c724314da46612266be3d80')
+      const creator = await User.findById(req.userId)
       if (!creator) {
         throw new Error('User not found.')
       }
