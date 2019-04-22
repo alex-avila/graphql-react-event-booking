@@ -1,16 +1,26 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const graphqlHttp = require('express-graphql')
-const mongoose = require('mongoose')
-const graphqlSchema = require('./graphql/schema')
-const graphqlResolvers = require('./graphql/resolvers')
-const isAuth = require('./middleware/is-auth')
+const express = require('express');
+const bodyParser = require('body-parser');
+const graphqlHttp = require('express-graphql');
+const mongoose = require('mongoose');
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolvers = require('./graphql/resolvers');
+const isAuth = require('./middleware/is-auth');
 
-const app = express()
+const app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
-app.use(isAuth)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+app.use(isAuth);
 
 app.use(
   '/graphql',
@@ -19,13 +29,14 @@ app.use(
     rootValue: graphqlResolvers,
     graphiql: true
   })
-)
+);
 
 mongoose
   .connect(
     `mongodb+srv://${process.env.MONGO_USER}:${
       process.env.MONGO_PASSWORD
-    }@cluster-one-sep7q.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`
+    }@cluster-one-sep7q.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`,
+    { useNewUrlParser: true }
   )
-  .then(() => app.listen(3000))
-  .catch(e => console.log(e))
+  .then(() => app.listen(8000))
+  .catch(e => console.log(e));
