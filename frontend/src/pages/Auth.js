@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import './Auth.css';
+import AuthContext from '../context/auth-context';
 
 class Auth extends Component {
   state = {
@@ -8,6 +9,8 @@ class Auth extends Component {
   };
   emailEl = React.createRef();
   passwordEl = React.createRef();
+
+  static contextType = AuthContext;
 
   handleSubmit = async e => {
     e.preventDefault();
@@ -55,6 +58,14 @@ class Auth extends Component {
       }
 
       const resData = await res.json();
+
+      if (this.state.isLogin) {
+        this.context.login(
+          resData.data.login.token,
+          resData.data.login.userId,
+          resData.data.login.tokenExpiration
+        );
+      }
 
       console.log(resData);
     } catch (err) {
